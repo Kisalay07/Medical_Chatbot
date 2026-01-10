@@ -3,7 +3,7 @@ mkdir -p src
 mkdir -p research
 
 #creating file
-touch src/main.py
+touch src/main.py 
 touch src/helper.py
 touch src/prompt.py
 touch .env
