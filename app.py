@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, request, jsonify
 import os
 from dotenv import load_dotenv
 
@@ -66,21 +66,28 @@ def index():
 
 @app.route("/get", methods=["POST"])
 def chat():
-    msg = request.form.get("msg")
-    print("User query:", msg)
+    data = request.get_json()
+    msg = data.get("msg")
 
     if not msg:
-        return "Please enter a question."
+        return jsonify({"answer": "Please enter a question."})
 
-    # ---- GREETING HANDLER (IMPORTANT) ----
     greetings = ["hi", "hello", "hey", "hii", "good morning", "good evening"]
     if msg.lower().strip() in greetings:
-        return "Hello! I’m a medical chatbot. You can ask me health-related questions."
+        return jsonify({
+            "answer": "Hello! I’m a medical chatbot. You can ask me health-related questions."
+        })
 
-    # ---- RAG PIPELINE ----
-    answer = rag_chain.invoke(msg)
-    print("Bot answer:", answer)
-    return answer
+    result = rag_chain.invoke(msg)
+
+    if isinstance(result, dict):
+        answer = result.get("output_text", str(result))
+    else:
+        answer = result
+
+    return jsonify({"answer": answer})
+
+
 
 # ---------------- Run ----------------
 if __name__ == "__main__":
