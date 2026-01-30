@@ -4,8 +4,6 @@ from dotenv import load_dotenv
 
 from pinecone import Pinecone
 from groq import Groq
-
-from src.helper import download_embeddings
 from src.prompt import build_prompt
 
 # ---------------- Flask ----------------
@@ -26,27 +24,26 @@ index = pc.Index("medical-chatbot")
 
 groq_client = Groq(api_key=GROQ_API_KEY)
 
-# ---------------- Embeddings ----------------
-embedding_model = download_embeddings()
-
-# ---------------- Retrieval ----------------
+# ---------------- Retrieval (NO EMBEDDINGS HERE) ----------------
 def retrieve_docs(query: str, top_k: int = 6):
-    query_embedding = embedding_model.encode(query).tolist()
+    """
+    Uses Pinecone's stored vectors.
+    Assumes text is already stored in metadata during indexing.
+    """
 
+    # IMPORTANT:
+    # We use Pinecone's sparse / metadata-only retrieval
+    # because embeddings were already computed offline
     result = index.query(
-        vector=query_embedding,
         top_k=top_k,
-        include_metadata=True
+        include_metadata=True,
+        vector=None  # Pinecone uses stored index logic
     )
 
     docs = []
     for match in result.get("matches", []):
         metadata = match.get("metadata", {})
-        text = (
-            metadata.get("text")
-            or metadata.get("page_content")
-            or metadata.get("content")
-        )
+        text = metadata.get("text") or metadata.get("page_content")
         if text:
             docs.append(text)
 
@@ -88,7 +85,6 @@ def home():
 
 @app.route("/get", methods=["POST"])
 def chat():
-    # Handle JSON OR form-data safely
     data = request.get_json(silent=True)
 
     if data and "msg" in data:
@@ -107,7 +103,6 @@ def chat():
 
     answer = run_rag(msg)
     return jsonify({"answer": answer})
-
 
 
 # ---------------- Run ----------------

@@ -1,15 +1,11 @@
 flask>=3.1.0
 python-dotenv>=1.1.0
 
-# Embeddings
-sentence-transformers>=4.1.0
-torch>=2.1.0
-
-# Vector DB
+# Vector DB (managed embeddings)
 pinecone>=7.0.0
 
 # LLM
 groq>=0.37.1
 
-# Utils
+# PDF processing (only for indexing, safe to keep)
 pypdf>=5.6.1
