@@ -1,16 +1,17 @@
-# Virtual environment
+# Virtual environments
 venv/
+venv-groq/
+.env
 
 # Python cache
 __pycache__/
 *.pyc
-
-# Environment variables
-.env
+*.pyo
+*.pyd
 
 # Jupyter
 .ipynb_checkpoints/
 
-# OS files
-Thumbs.db
+# OS
 .DS_Store
+Thumbs.db
