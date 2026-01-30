@@ -1,18 +1,15 @@
-# Web framework
 flask>=3.1.0
-
-# Groq official SDK
-groq>=0.37.1
-
-# Vector database (official)
-pinecone>=7.0.0
+python-dotenv>=1.1.0
 
 # Embeddings
 sentence-transformers>=4.1.0
 torch>=2.1.0
 
-# PDF ingestion
-pypdf>=5.6.1
+# Vector DB
+pinecone>=7.0.0
 
-# Environment variables
-python-dotenv>=1.1.0
+# LLM
+groq>=0.37.1
+
+# Utils
+pypdf>=5.6.1

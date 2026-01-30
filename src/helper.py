@@ -1,47 +1,92 @@
-from langchain.document_loaders import PyPDFLoader, DirectoryLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import HuggingFaceEmbeddings
+import os
 from typing import List
-from langchain.schema import Document
-from transformers import pipeline
-from langchain.llms import HuggingFacePipeline
+from pypdf import PdfReader
+from sentence_transformers import SentenceTransformer
 
-def load_pdf_files(data):
-    loader=DirectoryLoader(
-        data,
-        glob="*.pdf",
-        loader_cls=PyPDFLoader
-    )
 
-    documents=loader.load()
+# -------------------------------------------------
+# Load PDF files (same name as before)
+# -------------------------------------------------
+def load_pdf_files(data: str):
+    """
+    Load PDFs from a directory.
+    Returns list of dicts (compatible with trials.ipynb usage).
+    """
+    documents = []
+
+    for file in os.listdir(data):
+        if file.endswith(".pdf"):
+            file_path = os.path.join(data, file)
+            reader = PdfReader(file_path)
+
+            for page in reader.pages:
+                text = page.extract_text()
+                if text:
+                    documents.append(
+                        {
+                            "page_content": text,
+                            "metadata": {"source": file}
+                        }
+                    )
     return documents
 
-def filter_to_minimal_docs(docs: List[Document]) -> List[Document]:
-    """Given a list of Documents,
-      return a list of Documents with only the page_content and source metadata."""
-    minimal_docs=[]
+
+# -------------------------------------------------
+# Filter minimal docs (same name, same intent)
+# -------------------------------------------------
+def filter_to_minimal_docs(docs: List):
+    """
+    Keep only page_content + source metadata
+    """
+    minimal_docs = []
     for doc in docs:
-        src=doc.metadata.get("source")
         minimal_docs.append(
-            Document(
-                page_content=doc.page_content,
-                metadata={"source": src}
-            )
+            {
+                "page_content": doc["page_content"],
+                "metadata": {"source": doc["metadata"].get("source")}
+            }
         )
     return minimal_docs
-    
-#split the documents into smaller chunks
-def text_split(minimal_docs):
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500,
-        chunk_overlap=20,
-        
-    )
-    texts_chunk = text_splitter.split_documents(minimal_docs)
-    return texts_chunk
 
+
+# -------------------------------------------------
+# Text splitter (same function name)
+# -------------------------------------------------
+def text_split(minimal_docs):
+    """
+    Split text into chunks (manual replacement for RecursiveCharacterTextSplitter)
+    """
+    chunk_size = 500
+    chunk_overlap = 20
+
+    chunks = []
+
+    for doc in minimal_docs:
+        text = doc["page_content"]
+        source = doc["metadata"]["source"]
+
+        start = 0
+        while start < len(text):
+            end = start + chunk_size
+            chunk_text = text[start:end]
+
+            chunks.append(
+                {
+                    "page_content": chunk_text,
+                    "metadata": {"source": source}
+                }
+            )
+            start = end - chunk_overlap
+
+    return chunks
+
+
+# -------------------------------------------------
+# Download embeddings (same function name)
+# -------------------------------------------------
 def download_embeddings():
-    """download and return HuggingFace embeddings model"""
-    model_name="sentence-transformers/all-MiniLM-L6-v2"
-    embeddings=HuggingFaceEmbeddings(model_name=model_name)
-    return embeddings
+    """
+    Return SentenceTransformer model
+    """
+    model_name = "sentence-transformers/all-MiniLM-L6-v2"
+    return SentenceTransformer(model_name)

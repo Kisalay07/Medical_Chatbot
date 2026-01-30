@@ -1,9 +1,5 @@
-
-from langchain.prompts import PromptTemplate
-
-prompt = PromptTemplate(
-    input_variables=["context", "question"],
-    template="""
+def build_prompt(context: str, question: str) -> str:
+    return f"""
 You are a medical information assistant.
 
 Using ONLY the context below, provide a clear and moderately detailed explanation.
@@ -14,8 +10,6 @@ If the question is about a condition, explain:
 - Common causes
 - Typical symptoms
 - General management or care options (no prescriptions)
-
-If the context does not contain enough reliable information, say so clearly.
 
 Do NOT diagnose.
 Do NOT prescribe medications.
@@ -29,4 +23,3 @@ Question:
 
 Answer:
 """
-)
