@@ -2,6 +2,8 @@
 venv/
 venv-groq/
 .env
+_
+
 
 # Python cache
 __pycache__/
